@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/study_task.dart';
+import '../services/firebase_service.dart';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -17,6 +18,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 0);
   String _selectedPriority = 'Medium';
+  bool _isSaving = false;
 
   final List<String> _priorities = ['Low', 'Medium', 'High'];
 
@@ -46,8 +48,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     }
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      setState(() => _isSaving = true);
+
       final combinedDateTime = DateTime(
         _selectedDate.year,
         _selectedDate.month,
@@ -57,7 +61,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       );
 
       final newTask = StudyTask(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: '', // Firestore auto-id generate karega
         title: _titleController.text.trim(),
         subject: _subjectController.text.trim(),
         dueDateTime: combinedDateTime,
@@ -65,7 +69,29 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         isCompleted: false,
       );
 
-      Navigator.pop(context, newTask);
+      try {
+        await FirebaseService.addTask(newTask);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Study Task saved to Firebase successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error saving task: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -189,15 +215,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton.icon(
-                  onPressed: _submitForm,
-                  icon: const Icon(Icons.save_rounded, color: Colors.white),
-                  label: const Text('Save Study Task',
-                      style: TextStyle(fontSize: 16, color: Colors.white)),
+                  onPressed: _isSaving ? null : _submitForm,
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.cloud_upload_rounded,
+                          color: Colors.white),
+                  label: Text(
+                      _isSaving ? 'Saving to Cloud...' : 'Save Study Task',
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1E88E5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
