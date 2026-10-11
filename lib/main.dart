@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // FlutterFire CLI generated file
 import 'screens/splash_screen.dart';
 import 'screens/home_dashboard_screen.dart';
 import 'screens/add_task_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // FlutterFire options initialize
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const StudyMateApp());
 }
 
@@ -19,7 +27,7 @@ class StudyMateApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E88E5), // Professional Academic Blue
+          seedColor: const Color(0xFF1E88E5),
           brightness: Brightness.light,
         ),
         appBarTheme: const AppBarTheme(
@@ -28,7 +36,6 @@ class StudyMateApp extends StatelessWidget {
           backgroundColor: Color(0xFF1E88E5),
           foregroundColor: Colors.white,
         ),
-        // Flutter 3.22+ ke liye CardThemeData use kiya gaya hai
         cardTheme: CardThemeData(
           elevation: 2,
           shape: RoundedRectangleBorder(
