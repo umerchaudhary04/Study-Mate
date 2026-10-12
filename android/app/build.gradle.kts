@@ -23,7 +23,7 @@ android {
         applicationId = "com.example.studymate"
         
         // Firebase ke liye minimum SDK 21 zaroori hai
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

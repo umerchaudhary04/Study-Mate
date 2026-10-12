@@ -160,7 +160,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                value: _selectedPriority,
+                initialValue: _selectedPriority,
                 items: _priorities.map((p) {
                   return DropdownMenuItem(value: p, child: Text(p));
                 }).toList(),

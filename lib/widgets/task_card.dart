@@ -72,13 +72,14 @@ class TaskCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      // Subject Badge
+                      // Subject Badge (Updated withValues)
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context)
+                              .primaryColor
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -92,13 +93,13 @@ class TaskCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
 
-                      // Priority Chip
+                      // Priority Chip (Updated withValues)
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: _getPriorityColor(task.priority)
-                              .withOpacity(0.15),
+                              .withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(

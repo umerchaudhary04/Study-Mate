@@ -20,17 +20,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     _loadStudentName();
   }
 
-  // Local storage se student name load karna
   Future<void> _loadStudentName() async {
     final name = await LocalStorageService.getStudentName();
-    if (name != null && name.isNotEmpty) {
+    if (name != null && name.isNotEmpty && mounted) {
       setState(() {
         _studentName = name;
       });
     }
   }
 
-  // Student name edit karne ke liye simple dialog
   void _showEditNameDialog() {
     final controller = TextEditingController(text: _studentName);
     showDialog(
@@ -48,14 +46,19 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (controller.text.trim().isNotEmpty) {
-                await LocalStorageService.saveStudentName(
-                    controller.text.trim());
-                setState(() {
-                  _studentName = controller.text.trim();
-                });
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                await LocalStorageService.saveStudentName(newName);
+                if (mounted) {
+                  setState(() {
+                    _studentName = newName;
+                  });
+                }
               }
-              if (mounted) Navigator.pop(ctx);
+              // Fixed: async gap safe context check
+              if (ctx.mounted) {
+                Navigator.pop(ctx);
+              }
             },
             child: const Text('Save'),
           ),
@@ -64,13 +67,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-  // Delete karne se pehle user confirmation dialog
-  Future<void> _confirmDeleteTask(BuildContext context, String taskId, String taskTitle) async {
+  Future<void> _confirmDeleteTask(
+      BuildContext context, String taskId, String taskTitle) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Study Task?'),
-        content: Text('Are you sure you want to delete "$taskTitle"? This action cannot be undone.'),
+        content: Text(
+            'Are you sure you want to delete "$taskTitle"? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -148,12 +152,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
           return Column(
             children: [
-              // Welcome Banner with Local Storage Value
+              // Welcome Banner with Local Storage Value (Updated withValues)
               Container(
                 width: double.infinity,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                color: Theme.of(context).primaryColor.withOpacity(0.04),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.04),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -174,11 +178,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 ),
               ),
 
-              // Summary Metrics
+              // Summary Metrics (Updated withValues)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.08),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
