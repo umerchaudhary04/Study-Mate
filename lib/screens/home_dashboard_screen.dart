@@ -64,6 +64,54 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
+  // Delete karne se pehle user confirmation dialog
+  Future<void> _confirmDeleteTask(BuildContext context, String taskId, String taskTitle) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Study Task?'),
+        content: Text('Are you sure you want to delete "$taskTitle"? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade600,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true) {
+      try {
+        await FirebaseService.deleteTask(taskId);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Task "$taskTitle" deleted successfully!'),
+              backgroundColor: Colors.black87,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete task: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,15 +235,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                                 task.isCompleted,
                               );
                             },
-                            onDelete: () async {
-                              await FirebaseService.deleteTask(task.id);
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text('Deleted "${task.title}"')),
-                                );
-                              }
-                            },
+                            onDelete: () => _confirmDeleteTask(
+                              context,
+                              task.id,
+                              task.title,
+                            ),
                           );
                         },
                       ),
